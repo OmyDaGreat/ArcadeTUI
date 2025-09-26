@@ -33,7 +33,7 @@ dependencies {
     implementation("com.charleskorn.kaml:kaml:0.56.0")
     
     // HTTP client for downloading themes from URLs
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp:5.1.0")
     
     // Coroutines for game loops
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
