@@ -1,7 +1,7 @@
 package org.example.arcade.theme
 
-import kotlinx.serialization.Serializable
 import com.varabyte.kotter.foundation.text.Color
+import kotlinx.serialization.Serializable
 
 /**
  * Represents a theme configuration for the arcade system
@@ -13,10 +13,10 @@ data class Theme(
     val version: String = "1.0",
     val author: String = "ArcadeTUI",
     val colors: ThemeColors,
-    val styles: ThemeStyles = ThemeStyles()
+    val styles: ThemeStyles = ThemeStyles(),
 ) {
-    fun toKotterColors(): KotterThemeColors {
-        return KotterThemeColors(
+    fun toKotterColors(): KotterThemeColors =
+        KotterThemeColors(
             primary = parseHexColor(colors.primary) ?: Color.CYAN,
             secondary = parseHexColor(colors.secondary) ?: Color.YELLOW,
             accent = parseHexColor(colors.accent) ?: Color.GREEN,
@@ -30,27 +30,26 @@ data class Theme(
             player = parseHexColor(colors.player) ?: Color.YELLOW,
             enemy = parseHexColor(colors.enemy) ?: Color.RED,
             bullet = parseHexColor(colors.bullet) ?: Color.WHITE,
-            border = parseHexColor(colors.border) ?: Color.WHITE
+            border = parseHexColor(colors.border) ?: Color.WHITE,
         )
-    }
 }
 
 @Serializable
 data class ThemeColors(
-    val primary: String = "#00FFFF",      // Cyan
-    val secondary: String = "#FFFF00",     // Yellow
-    val accent: String = "#00FF00",        // Green
-    val background: String = "#000000",    // Black
-    val text: String = "#FFFFFF",          // White
-    val textDim: String = "#808080",       // Gray
-    val success: String = "#00FF00",       // Green
-    val warning: String = "#FFFF00",       // Yellow
-    val error: String = "#FF0000",         // Red
-    val gameArea: String = "#FFFFFF",      // White
-    val player: String = "#FFFF00",        // Yellow
-    val enemy: String = "#FF0000",         // Red
-    val bullet: String = "#FFFFFF",        // White
-    val border: String = "#FFFFFF"         // White
+    val primary: String = "#00FFFF", // Cyan
+    val secondary: String = "#FFFF00", // Yellow
+    val accent: String = "#00FF00", // Green
+    val background: String = "#000000", // Black
+    val text: String = "#FFFFFF", // White
+    val textDim: String = "#808080", // Gray
+    val success: String = "#00FF00", // Green
+    val warning: String = "#FFFF00", // Yellow
+    val error: String = "#FF0000", // Red
+    val gameArea: String = "#FFFFFF", // White
+    val player: String = "#FFFF00", // Yellow
+    val enemy: String = "#FF0000", // Red
+    val bullet: String = "#FFFFFF", // White
+    val border: String = "#FFFFFF", // White
 )
 
 @Serializable
@@ -58,7 +57,7 @@ data class ThemeStyles(
     val logoStyle: String = "bold",
     val menuStyle: String = "normal",
     val selectedStyle: String = "bold",
-    val borderStyle: String = "normal"
+    val borderStyle: String = "normal",
 )
 
 /**
@@ -78,15 +77,15 @@ data class KotterThemeColors(
     val player: Color,
     val enemy: Color,
     val bullet: Color,
-    val border: Color
+    val border: Color,
 )
 
 /**
  * Extension function to parse hex color strings to Kotter Color
  * Uses predefined colors for now until we find the correct RGB constructor
  */
-private fun parseHexColor(hex: String): Color? {
-    return when (hex.uppercase()) {
+private fun parseHexColor(hex: String): Color? =
+    when (hex.uppercase()) {
         "#FF0000" -> Color.RED
         "#00FF00" -> Color.GREEN
         "#0000FF" -> Color.BLUE
@@ -98,12 +97,11 @@ private fun parseHexColor(hex: String): Color? {
         "#808080" -> Color.BRIGHT_BLACK
         "#FF8000" -> Color.YELLOW // Orange approximation
         "#FF0080" -> Color.MAGENTA // Hot Pink approximation
-        "#00FF80" -> Color.GREEN  // Bright Green approximation
-        "#0080FF" -> Color.CYAN   // Electric Blue approximation
-        "#4080FF" -> Color.BLUE   // Soft Blue approximation
+        "#00FF80" -> Color.GREEN // Bright Green approximation
+        "#0080FF" -> Color.CYAN // Electric Blue approximation
+        "#4080FF" -> Color.BLUE // Soft Blue approximation
         "#8080FF" -> Color.MAGENTA // Soft Purple approximation
-        "#40FF80" -> Color.GREEN  // Soft Green approximation
-        "#C0C0C0" -> Color.WHITE  // Silver approximation
+        "#40FF80" -> Color.GREEN // Soft Green approximation
+        "#C0C0C0" -> Color.WHITE // Silver approximation
         else -> Color.WHITE // Default fallback
     }
-}
