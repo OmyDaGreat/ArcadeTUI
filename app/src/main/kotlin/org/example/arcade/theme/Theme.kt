@@ -1,6 +1,6 @@
 package org.example.arcade.theme
 
-import com.varabyte.kotter.foundation.text.Color
+import com.googlecode.lanterna.TextColor
 import kotlinx.serialization.Serializable
 
 /**
@@ -15,22 +15,22 @@ data class Theme(
     val colors: ThemeColors,
     val styles: ThemeStyles = ThemeStyles(),
 ) {
-    fun toKotterColors(): KotterThemeColors =
-        KotterThemeColors(
-            primary = parseHexColor(colors.primary) ?: Color.CYAN,
-            secondary = parseHexColor(colors.secondary) ?: Color.YELLOW,
-            accent = parseHexColor(colors.accent) ?: Color.GREEN,
-            background = parseHexColor(colors.background) ?: Color.BLACK,
-            text = parseHexColor(colors.text) ?: Color.WHITE,
-            textDim = parseHexColor(colors.textDim) ?: Color.BRIGHT_BLACK,
-            success = parseHexColor(colors.success) ?: Color.GREEN,
-            warning = parseHexColor(colors.warning) ?: Color.YELLOW,
-            error = parseHexColor(colors.error) ?: Color.RED,
-            gameArea = parseHexColor(colors.gameArea) ?: Color.WHITE,
-            player = parseHexColor(colors.player) ?: Color.YELLOW,
-            enemy = parseHexColor(colors.enemy) ?: Color.RED,
-            bullet = parseHexColor(colors.bullet) ?: Color.WHITE,
-            border = parseHexColor(colors.border) ?: Color.WHITE,
+    fun toLanternaColors(): LanternaThemeColors =
+        LanternaThemeColors(
+            primary = parseHexColor(colors.primary) ?: TextColor.ANSI.CYAN,
+            secondary = parseHexColor(colors.secondary) ?: TextColor.ANSI.YELLOW,
+            accent = parseHexColor(colors.accent) ?: TextColor.ANSI.GREEN,
+            background = parseHexColor(colors.background) ?: TextColor.ANSI.BLACK,
+            text = parseHexColor(colors.text) ?: TextColor.ANSI.WHITE,
+            textDim = parseHexColor(colors.textDim) ?: TextColor.ANSI.BLACK_BRIGHT,
+            success = parseHexColor(colors.success) ?: TextColor.ANSI.GREEN,
+            warning = parseHexColor(colors.warning) ?: TextColor.ANSI.YELLOW,
+            error = parseHexColor(colors.error) ?: TextColor.ANSI.RED,
+            gameArea = parseHexColor(colors.gameArea) ?: TextColor.ANSI.WHITE,
+            player = parseHexColor(colors.player) ?: TextColor.ANSI.YELLOW,
+            enemy = parseHexColor(colors.enemy) ?: TextColor.ANSI.RED,
+            bullet = parseHexColor(colors.bullet) ?: TextColor.ANSI.WHITE,
+            border = parseHexColor(colors.border) ?: TextColor.ANSI.WHITE,
         )
 }
 
@@ -61,47 +61,61 @@ data class ThemeStyles(
 )
 
 /**
- * Kotter-compatible theme colors
+ * Lanterna-compatible theme colors
  */
-data class KotterThemeColors(
-    val primary: Color,
-    val secondary: Color,
-    val accent: Color,
-    val background: Color,
-    val text: Color,
-    val textDim: Color,
-    val success: Color,
-    val warning: Color,
-    val error: Color,
-    val gameArea: Color,
-    val player: Color,
-    val enemy: Color,
-    val bullet: Color,
-    val border: Color,
+data class LanternaThemeColors(
+    val primary: TextColor,
+    val secondary: TextColor,
+    val accent: TextColor,
+    val background: TextColor,
+    val text: TextColor,
+    val textDim: TextColor,
+    val success: TextColor,
+    val warning: TextColor,
+    val error: TextColor,
+    val gameArea: TextColor,
+    val player: TextColor,
+    val enemy: TextColor,
+    val bullet: TextColor,
+    val border: TextColor,
 )
 
 /**
- * Extension function to parse hex color strings to Kotter Color
- * Uses predefined colors for now until we find the correct RGB constructor
+ * Extension function to parse hex color strings to Lanterna TextColor
+ * Uses predefined colors for now, with RGB support for custom colors
  */
-private fun parseHexColor(hex: String): Color? =
+private fun parseHexColor(hex: String): TextColor? =
     when (hex.uppercase()) {
-        "#FF0000" -> Color.RED
-        "#00FF00" -> Color.GREEN
-        "#0000FF" -> Color.BLUE
-        "#FFFF00" -> Color.YELLOW
-        "#FF00FF" -> Color.MAGENTA
-        "#00FFFF" -> Color.CYAN
-        "#FFFFFF" -> Color.WHITE
-        "#000000" -> Color.BLACK
-        "#808080" -> Color.BRIGHT_BLACK
-        "#FF8000" -> Color.YELLOW // Orange approximation
-        "#FF0080" -> Color.MAGENTA // Hot Pink approximation
-        "#00FF80" -> Color.GREEN // Bright Green approximation
-        "#0080FF" -> Color.CYAN // Electric Blue approximation
-        "#4080FF" -> Color.BLUE // Soft Blue approximation
-        "#8080FF" -> Color.MAGENTA // Soft Purple approximation
-        "#40FF80" -> Color.GREEN // Soft Green approximation
-        "#C0C0C0" -> Color.WHITE // Silver approximation
-        else -> Color.WHITE // Default fallback
+        "#FF0000" -> TextColor.ANSI.RED
+        "#00FF00" -> TextColor.ANSI.GREEN
+        "#0000FF" -> TextColor.ANSI.BLUE
+        "#FFFF00" -> TextColor.ANSI.YELLOW
+        "#FF00FF" -> TextColor.ANSI.MAGENTA
+        "#00FFFF" -> TextColor.ANSI.CYAN
+        "#FFFFFF" -> TextColor.ANSI.WHITE
+        "#000000" -> TextColor.ANSI.BLACK
+        "#808080" -> TextColor.ANSI.BLACK_BRIGHT
+        "#FF8000" -> TextColor.ANSI.YELLOW // Orange approximation
+        "#FF0080" -> TextColor.ANSI.MAGENTA // Hot Pink approximation
+        "#00FF80" -> TextColor.ANSI.GREEN // Bright Green approximation
+        "#0080FF" -> TextColor.ANSI.CYAN // Electric Blue approximation
+        "#4080FF" -> TextColor.ANSI.BLUE // Soft Blue approximation
+        "#8080FF" -> TextColor.ANSI.MAGENTA // Soft Purple approximation
+        "#40FF80" -> TextColor.ANSI.GREEN // Soft Green approximation
+        "#C0C0C0" -> TextColor.ANSI.WHITE // Silver approximation
+        else -> {
+            // Try to parse as RGB hex
+            if (hex.startsWith("#") && hex.length == 7) {
+                try {
+                    val r = hex.substring(1, 3).toInt(16)
+                    val g = hex.substring(3, 5).toInt(16)
+                    val b = hex.substring(5, 7).toInt(16)
+                    TextColor.RGB(r, g, b)
+                } catch (e: NumberFormatException) {
+                    TextColor.ANSI.WHITE // Default fallback
+                }
+            } else {
+                TextColor.ANSI.WHITE // Default fallback
+            }
+        }
     }

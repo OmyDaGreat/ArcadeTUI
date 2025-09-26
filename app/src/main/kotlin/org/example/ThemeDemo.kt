@@ -1,8 +1,7 @@
 package org.example
 
-import com.varabyte.kotter.foundation.session
-import com.varabyte.kotter.foundation.text.color
-import com.varabyte.kotter.foundation.text.textLine
+import com.googlecode.lanterna.terminal.DefaultTerminalFactory
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.example.arcade.theme.ThemeManager
 
@@ -24,35 +23,64 @@ fun main(args: Array<String>) {
     }
 
     if (args.isNotEmpty() && args[0] == "--demo") {
-        println("Demonstrating all themes with Kotter...")
+        println("Demonstrating all themes with Lanterna...")
 
-        themeManager.getAllThemes().forEach { theme ->
-            println("\n--- Theme: ${theme.name} ---")
-            themeManager.setCurrentTheme(theme)
+        val terminal = DefaultTerminalFactory().createTerminal()
+        terminal.enterPrivateMode()
 
-            runBlocking {
-                session {
-                    section {
-                        val kotterColors = theme.toKotterColors()
+        runBlocking {
+            themeManager.getAllThemes().forEach { theme ->
+                println("\n--- Theme: ${theme.name} ---")
+                themeManager.setCurrentTheme(theme)
 
-                        color(kotterColors.primary) { textLine("Primary: ArcadeTUI Logo") }
-                        color(kotterColors.secondary) { textLine("Secondary: Menu headers") }
-                        color(kotterColors.accent) { textLine("Accent: Selected items") }
-                        color(kotterColors.text) { textLine("Text: Normal text") }
-                        color(kotterColors.textDim) { textLine("TextDim: Subtle information") }
-                        color(kotterColors.success) { textLine("Success: Positive messages") }
-                        color(kotterColors.warning) { textLine("Warning: Caution messages") }
-                        color(kotterColors.error) { textLine("Error: Error messages") }
-                        color(kotterColors.player) { textLine("Player: Player elements") }
-                        color(kotterColors.enemy) { textLine("Enemy: Enemy elements") }
-                        color(kotterColors.bullet) { textLine("Bullet: Projectiles") }
-                        color(kotterColors.border) { textLine("Border: UI borders") }
-                    }
-                }
+                terminal.clearScreen()
+                terminal.setCursorPosition(0, 0)
+                
+                val lanternaColors = theme.toLanternaColors()
+
+                terminal.setForegroundColor(lanternaColors.primary)
+                terminal.putString("Primary: ArcadeTUI Logo\n")
+                
+                terminal.setForegroundColor(lanternaColors.secondary)
+                terminal.putString("Secondary: Menu headers\n")
+                
+                terminal.setForegroundColor(lanternaColors.accent)
+                terminal.putString("Accent: Selected items\n")
+                
+                terminal.setForegroundColor(lanternaColors.text)
+                terminal.putString("Text: Normal text\n")
+                
+                terminal.setForegroundColor(lanternaColors.textDim)
+                terminal.putString("TextDim: Subtle information\n")
+                
+                terminal.setForegroundColor(lanternaColors.success)
+                terminal.putString("Success: Positive messages\n")
+                
+                terminal.setForegroundColor(lanternaColors.warning)
+                terminal.putString("Warning: Caution messages\n")
+                
+                terminal.setForegroundColor(lanternaColors.error)
+                terminal.putString("Error: Error messages\n")
+                
+                terminal.setForegroundColor(lanternaColors.player)
+                terminal.putString("Player: Player elements\n")
+                
+                terminal.setForegroundColor(lanternaColors.enemy)
+                terminal.putString("Enemy: Enemy elements\n")
+                
+                terminal.setForegroundColor(lanternaColors.bullet)
+                terminal.putString("Bullet: Projectiles\n")
+                
+                terminal.setForegroundColor(lanternaColors.border)
+                terminal.putString("Border: UI borders\n")
+                
+                terminal.flush()
+                delay(2000) // Pause between themes
             }
-
-            Thread.sleep(2000) // Pause between themes
         }
+        
+        terminal.exitPrivateMode()
+        terminal.close()
         return
     }
 
@@ -72,5 +100,5 @@ fun main(args: Array<String>) {
     }
 
     println("\nUse --list to see just theme names")
-    println("Use --demo to see themes in action with Kotter")
+    println("Use --demo to see themes in action with Lanterna")
 }

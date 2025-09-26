@@ -1,6 +1,6 @@
 [versions]
 datetime = "0.7.1-0.6.x-compat"
-kotter = "1.2.1"
+lanterna = "3.1.3"
 serialization = "1.9.0"
 kaml = "0.97.0"
 okhttp = "5.1.0"
@@ -9,7 +9,7 @@ kotlin = "2.2.20"
 
 [libraries]
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime" , version.ref = "datetime" }
-kotter = { group = "com.varabyte.kotter", name = "kotter", version.ref = "kotter" }
+lanterna = { group = "com.googlecode.lanterna", name = "lanterna", version.ref = "lanterna" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
 kaml = { group = "com.charleskorn.kaml", name = "kaml", version.ref = "kaml" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
