@@ -1,15 +1,56 @@
 # ArcadeTUI
 
-A retro-style terminal arcade system with persistent scoreboards and modular game cartridges.
+A retro-style terminal arcade system with persistent scoreboards, modular game cartridges, and **advanced theming system**.
 
 ## 🕹️ Features
 
-- **Retro TUI Interface**: Beautiful ASCII art with vintage styling
+- **Retro TUI Interface**: Beautiful ASCII art with vintage styling powered by Kotter
+- **Advanced Theming System**: 5 built-in themes + custom theme support with URL downloading
 - **Modular Cartridge System**: Easy to add new games as virtual cartridges
 - **Persistent Scoreboards**: JSON-based high score tracking for each game
 - **Two Classic Games**:
   - 🧱 **TETRIS**: Classic falling blocks puzzle with full rotation and line clearing
   - 🚀 **GALAGA**: Space shooter with enemies, bullets, and progressive levels
+
+## 🎨 Theming System
+
+### Built-in Themes
+- **Classic**: Original ArcadeTUI cyan/yellow theme
+- **Neon**: Bright cyberpunk colors (hot pink/bright green)
+- **Minimal**: Clean monochrome design
+- **Dark**: Muted colors for low-light environments  
+- **Retro**: Classic 80s arcade orange/magenta palette
+
+### Theme Commands
+```bash
+# See available themes
+gradle run --args="--theme-demo"
+
+# Cycle through all themes
+gradle run --args="--cycle-themes"
+```
+
+### Custom Theme Support
+Create custom themes in YAML format:
+```yaml
+name: "Matrix"
+description: "Green-on-black matrix theme"
+colors:
+  primary: "#00FF00"
+  secondary: "#008000" 
+  accent: "#00FF00"
+  text: "#00FF00"
+  # ... more colors
+```
+
+### URL Theme Downloading
+Download themes from URLs (YAML or JSON):
+```kotlin
+// In code
+themeManager.addThemeFromUrl("https://example.com/themes/matrix.yaml")
+
+// Theme files are saved to arcade-data/themes/custom/
+```
 
 ## 🎮 Controls
 
@@ -17,6 +58,7 @@ A retro-style terminal arcade system with persistent scoreboards and modular gam
 - `↑↓` - Navigate between game cartridges
 - `ENTER` - Launch selected game
 - `S` - View high scores
+- `T` - Theme selection (planned)
 - `Q` - Quit arcade
 
 ### Tetris Controls
@@ -48,7 +90,20 @@ gradle build
 
 # Run the arcade
 gradle run
+
+# Theme demos
+gradle run --args="--theme-demo"
+gradle run --args="--cycle-themes"
 ```
+
+## 🛠️ Technology Stack
+
+- **Terminal UI**: [Kotter](https://github.com/varabyte/kotter) - Modern Kotlin TUI framework
+- **Theme System**: Custom YAML-based theming with HTTP downloading
+- **Serialization**: Kotlinx Serialization (JSON) + Kaml (YAML)
+- **HTTP Client**: OkHttp for theme downloads
+- **Coroutines**: Kotlinx Coroutines for async operations
+- **Persistence**: JSON file storage for scores and themes
 
 ## 🎯 Game Features
 
@@ -106,12 +161,30 @@ arcade.addCartridge(MyGameCartridge())
 
 ## 🏛️ Architecture
 
-The system follows a modular architecture:
+The system follows a modular, themed architecture:
 
-- **ArcadeSystem**: Core system managing terminal I/O, menus, and cartridges
+### Core Components
+- **ArcadeSystem**: Core system managing terminal I/O, menus, and cartridges (now Kotter-based)
+- **ThemeManager**: Handles theme loading, switching, URL downloads, and persistence
 - **GameCartridge**: Interface for all games to implement
 - **ScoreManager**: Handles persistent high score storage
-- **Individual Games**: Tetris and Galaga implementations
+
+### Theme System Architecture
+- **Theme**: Data class representing a complete theme configuration
+- **ThemeColors**: Color palette for all UI elements
+- **KotterThemeColors**: Kotter-compatible color objects
+- **Default Themes**: 5 built-in themes with different aesthetics
+- **Custom Themes**: User-defined themes loaded from YAML/JSON files
+- **URL Support**: HTTP downloading of themes from remote URLs
+- **Persistence**: Themes stored in `arcade-data/themes/`
+
+### Game Integration
+Individual games can access themed colors through:
+```kotlin
+val theme = arcade.getThemeManager().currentTheme.toKotterColors()
+color(theme.player) { /* render player */ }
+color(theme.enemy) { /* render enemies */ }
+```
 
 ## 📝 License
 
@@ -119,9 +192,22 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🚀 Future Enhancements
 
+### Completed ✅
+- ✅ **Advanced Theming System** with 5 built-in themes
+- ✅ **URL Theme Downloads** with YAML/JSON support  
+- ✅ **Kotter Integration** for modern TUI rendering
+- ✅ **Theme Persistence** and management
+
+### Planned 🔄
+- 🔄 **Interactive Theme Selection Menu** with live preview
+- 🔄 **Game Theme Integration** - convert games to use themed colors
+- 🔄 **Theme Editor UI** for creating custom themes interactively
+
+### Future Ideas 💡
 - More classic arcade games (Pac-Man, Space Invaders, etc.)
 - Sound effects using terminal beep
 - Game state saving/loading
 - Tournament mode with timed competitions
 - Network multiplayer support
-- Configuration system for controls and settings
+- Animation effects and transitions
+- Theme sharing community with public theme repository
