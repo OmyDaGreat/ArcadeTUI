@@ -1,21 +1,24 @@
 package org.example.arcade
 
-import com.varabyte.kotter.foundation.session
-import com.varabyte.kotter.foundation.text.color
-import com.varabyte.kotter.foundation.text.text
-import com.varabyte.kotter.foundation.text.textLine
+import com.googlecode.lanterna.TerminalSize
+import com.googlecode.lanterna.TextColor
+import com.googlecode.lanterna.input.KeyStroke
+import com.googlecode.lanterna.input.KeyType
+import com.googlecode.lanterna.terminal.DefaultTerminalFactory
+import com.googlecode.lanterna.terminal.Terminal
 import kotlinx.coroutines.delay
 import org.example.arcade.theme.ThemeManager
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 /**
- * Core arcade system managing games, scores, and terminal I/O using Kotter
+ * Core arcade system managing games, scores, and terminal I/O using Lanterna
  */
 class ArcadeSystem {
     private val scoreManager = ScoreManager()
     private val cartridges = mutableListOf<GameCartridge>()
     private val themeManager = ThemeManager()
+    private var terminal: Terminal? = null
 
     fun addCartridge(cartridge: GameCartridge) {
         cartridges.add(cartridge)
@@ -31,9 +34,22 @@ class ArcadeSystem {
     fun getCurrentDateTime(): String = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
 
     /**
-     * Show interactive main arcade menu using Kotter
+     * Initialize terminal for Lanterna
+     */
+    private fun initializeTerminal(): Terminal {
+        if (terminal == null) {
+            terminal = DefaultTerminalFactory().createTerminal()
+            terminal?.enterPrivateMode()
+            terminal?.clearScreen()
+        }
+        return terminal!!
+    }
+
+    /**
+     * Show interactive main arcade menu using Lanterna
      */
     suspend fun showMainMenu() {
+        val term = initializeTerminal()
         var selectedIndex = 0
         val menuItems = mutableListOf<MenuItem>()
         
@@ -49,75 +65,84 @@ class ArcadeSystem {
         
         var running = true
         while (running) {
-            // Display menu using Kotter session
-            session {
-                section {
-                    val theme = themeManager.currentTheme.toKotterColors()
-                    
-                    // Show logo
-                    color(theme.primary) {
-                        textLine(showArcadeLogo())
-                    }
-                    textLine()
-                    
-                    // Show menu items
-                    color(theme.secondary) { textLine("═══ MAIN MENU ═══") }
-                    textLine()
-                    
-                    menuItems.forEachIndexed { index, item ->
-                        val isSelected = index == selectedIndex
-                        if (isSelected) {
-                            color(theme.accent) { 
-                                text("► ${item.displayName}")
-                            }
-                        } else {
-                            color(theme.text) { 
-                                text("  ${item.displayName}")
-                            }
-                        }
-                        color(theme.textDim) { textLine("  ${item.description}") }
-                    }
-                    
-                    textLine()
-                    color(theme.textDim) { textLine("Use ↑↓ (W/S) to navigate, ENTER to select, Q to quit") }
-                    color(theme.textDim) { textLine("Current theme: ${themeManager.currentTheme.name}") }
+            // Clear screen and display menu using Lanterna
+            term.clearScreen()
+            term.setCursorPosition(0, 0)
+            
+            val theme = themeManager.currentTheme.toLanternaColors()
+            
+            // Show logo
+            printWithColor(term, showArcadeLogo(), theme.primary)
+            term.putCharacter('\n')
+            
+            // Show menu items
+            term.setForegroundColor(theme.secondary)
+            term.putString("═══ MAIN MENU ═══\n")
+            term.putCharacter('\n')
+            
+            menuItems.forEachIndexed { index, item ->
+                val isSelected = index == selectedIndex
+                if (isSelected) {
+                    term.setForegroundColor(theme.accent)
+                    term.putString("► ${item.displayName}")
+                } else {
+                    term.setForegroundColor(theme.text)
+                    term.putString("  ${item.displayName}")
                 }
+                term.setForegroundColor(theme.textDim)
+                term.putString("  ${item.description}\n")
             }
+            
+            term.putCharacter('\n')
+            term.setForegroundColor(theme.textDim)
+            term.putString("Use ↑↓ (W/S) to navigate, ENTER to select, Q to quit\n")
+            term.putString("Current theme: ${themeManager.currentTheme.name}\n")
+            
+            term.flush()
             
             // Handle input
-            val input = getInput(100)
-            when (input) {
-                // Arrow keys or WASD for navigation
-                65, 119, 87 -> { // Up arrow, w, W
-                    selectedIndex = if (selectedIndex > 0) selectedIndex - 1 else menuItems.size - 1
-                }
-                66, 115, 83 -> { // Down arrow, s, S
-                    selectedIndex = if (selectedIndex < menuItems.size - 1) selectedIndex + 1 else 0
-                }
-                10, 13 -> { // Enter
-                    when (val item = menuItems[selectedIndex]) {
-                        is MenuItem.Game -> {
-                            // Launch the game
-                            launchGame(item.cartridge)
-                        }
-                        MenuItem.HighScores -> {
-                            showHighScores()
-                        }
-                        MenuItem.ThemeSelector -> {
-                            showThemeSelector()
-                        }
-                        MenuItem.Quit -> {
-                            running = false
+            val keyStroke = term.pollInput()
+            keyStroke?.let { key ->
+                when {
+                    key.keyType == KeyType.ArrowUp || key.character?.lowercaseChar() == 'w' -> {
+                        selectedIndex = if (selectedIndex > 0) selectedIndex - 1 else menuItems.size - 1
+                    }
+                    key.keyType == KeyType.ArrowDown || key.character?.lowercaseChar() == 's' -> {
+                        selectedIndex = if (selectedIndex < menuItems.size - 1) selectedIndex + 1 else 0
+                    }
+                    key.keyType == KeyType.Enter -> {
+                        when (val item = menuItems[selectedIndex]) {
+                            is MenuItem.Game -> {
+                                // Launch the game
+                                launchGame(item.cartridge)
+                            }
+                            MenuItem.HighScores -> {
+                                showHighScores()
+                            }
+                            MenuItem.ThemeSelector -> {
+                                showThemeSelector()
+                            }
+                            MenuItem.Quit -> {
+                                running = false
+                            }
                         }
                     }
-                }
-                113, 81 -> { // q, Q
-                    running = false
+                    key.character?.lowercaseChar() == 'q' -> {
+                        running = false
+                    }
                 }
             }
             
-            delay(50) // Small delay to prevent excessive CPU usage
+            delay(50) // Small delay to prevent busy waiting
         }
+    }
+    
+    /**
+     * Helper function to print text with color using Lanterna
+     */
+    private fun printWithColor(terminal: Terminal, text: String, color: TextColor) {
+        terminal.setForegroundColor(color)
+        terminal.putString(text)
     }
     
     /**
@@ -135,42 +160,48 @@ class ArcadeSystem {
      * Show high scores menu
      */
     private suspend fun showHighScores() {
+        val term = terminal!!
         var running = true
         while (running) {
-            session {
-                section {
-                    val theme = themeManager.currentTheme.toKotterColors()
-                    
-                    color(theme.primary) { textLine("═══ HIGH SCORES ═══") }
-                    textLine()
-                    
-                    if (cartridges.isEmpty()) {
-                        color(theme.textDim) { textLine("No games available") }
+            term.clearScreen()
+            term.setCursorPosition(0, 0)
+            
+            val theme = themeManager.currentTheme.toLanternaColors()
+            
+            term.setForegroundColor(theme.primary)
+            term.putString("═══ HIGH SCORES ═══\n\n")
+            
+            if (cartridges.isEmpty()) {
+                term.setForegroundColor(theme.textDim)
+                term.putString("No games available\n")
+            } else {
+                cartridges.forEach { cartridge ->
+                    term.setForegroundColor(theme.secondary)
+                    term.putString("${cartridge.name}:\n")
+                    val scores = scoreManager.loadScores(cartridge.name.lowercase())
+                    if (scores.isEmpty()) {
+                        term.setForegroundColor(theme.textDim)
+                        term.putString("  No scores yet\n")
                     } else {
-                        cartridges.forEach { cartridge ->
-                            color(theme.secondary) { textLine("${cartridge.name}:") }
-                            val scores = scoreManager.loadScores(cartridge.name.lowercase())
-                            if (scores.isEmpty()) {
-                                color(theme.textDim) { textLine("  No scores yet") }
-                            } else {
-                                scores.take(5).forEach { score ->
-                                    color(theme.text) { 
-                                        textLine("  ${score.playerName}: ${score.score} (${score.date})")
-                                    }
-                                }
-                            }
-                            textLine()
+                        scores.take(5).forEach { score ->
+                            term.setForegroundColor(theme.text)
+                            term.putString("  ${score.playerName}: ${score.score} (${score.date})\n")
                         }
                     }
-                    
-                    color(theme.textDim) { textLine("Press ESC or Q to return to main menu") }
+                    term.putCharacter('\n')
                 }
             }
             
-            val input = getInput(100)
-            when (input) {
-                27, 113, 81 -> { // ESC, q, Q
-                    running = false
+            term.setForegroundColor(theme.textDim)
+            term.putString("Press ESC or Q to return to main menu\n")
+            term.flush()
+            
+            val keyStroke = term.pollInput()
+            keyStroke?.let { key ->
+                when {
+                    key.keyType == KeyType.Escape || key.character?.lowercaseChar() == 'q' -> {
+                        running = false
+                    }
                 }
             }
             
@@ -182,6 +213,7 @@ class ArcadeSystem {
      * Show theme selector menu
      */
     private suspend fun showThemeSelector() {
+        val term = terminal!!
         var selectedThemeIndex = themeManager.getAllThemes().indexOfFirst { 
             it.name == themeManager.currentTheme.name 
         }.takeIf { it >= 0 } ?: 0
@@ -190,64 +222,80 @@ class ArcadeSystem {
         var running = true
         
         while (running) {
-            session {
-                section {
-                    val currentTheme = themes[selectedThemeIndex]
-                    val kotterColors = currentTheme.toKotterColors()
-                    
-                    color(kotterColors.primary) { textLine("═══ THEME SELECTOR ═══") }
-                    textLine()
-                    
-                    themes.forEachIndexed { index, theme ->
-                        val isSelected = index == selectedThemeIndex
-                        val isActive = theme.name == themeManager.currentTheme.name
-                        
-                        when {
-                            isSelected && isActive -> {
-                                color(kotterColors.success) { text("► ${theme.name} (ACTIVE)") }
-                            }
-                            isSelected -> {
-                                color(kotterColors.accent) { text("► ${theme.name}") }
-                            }
-                            isActive -> {
-                                color(kotterColors.success) { text("  ${theme.name} (ACTIVE)") }
-                            }
-                            else -> {
-                                color(kotterColors.text) { text("  ${theme.name}") }
-                            }
-                        }
-                        color(kotterColors.textDim) { textLine(" - ${theme.description}") }
+            term.clearScreen()
+            term.setCursorPosition(0, 0)
+            
+            val currentTheme = themes[selectedThemeIndex]
+            val lanternaColors = currentTheme.toLanternaColors()
+            
+            term.setForegroundColor(lanternaColors.primary)
+            term.putString("═══ THEME SELECTOR ═══\n\n")
+            
+            themes.forEachIndexed { index, theme ->
+                val isSelected = index == selectedThemeIndex
+                val isActive = theme.name == themeManager.currentTheme.name
+                
+                when {
+                    isSelected && isActive -> {
+                        term.setForegroundColor(lanternaColors.success)
+                        term.putString("► ${theme.name} (ACTIVE)")
                     }
-                    
-                    textLine()
-                    color(kotterColors.secondary) { textLine("═══ PREVIEW ═══") }
-                    color(kotterColors.primary) { text("Primary ") }
-                    color(kotterColors.secondary) { text("Secondary ") }
-                    color(kotterColors.accent) { text("Accent ") }
-                    color(kotterColors.success) { text("Success ") }
-                    color(kotterColors.warning) { text("Warning ") }
-                    color(kotterColors.error) { textLine("Error") }
-                    
-                    textLine()
-                    color(kotterColors.textDim) { textLine("Use ↑↓ (W/S) to navigate, ENTER to apply theme, ESC/Q to return") }
+                    isSelected -> {
+                        term.setForegroundColor(lanternaColors.accent)
+                        term.putString("► ${theme.name}")
+                    }
+                    isActive -> {
+                        term.setForegroundColor(lanternaColors.success)
+                        term.putString("  ${theme.name} (ACTIVE)")
+                    }
+                    else -> {
+                        term.setForegroundColor(lanternaColors.text)
+                        term.putString("  ${theme.name}")
+                    }
                 }
+                term.setForegroundColor(lanternaColors.textDim)
+                term.putString(" - ${theme.description}\n")
             }
             
-            val input = getInput(100)
-            when (input) {
-                65, 119, 87 -> { // Up arrow, w, W
-                    selectedThemeIndex = if (selectedThemeIndex > 0) selectedThemeIndex - 1 else themes.size - 1
-                }
-                66, 115, 83 -> { // Down arrow, s, S
-                    selectedThemeIndex = if (selectedThemeIndex < themes.size - 1) selectedThemeIndex + 1 else 0
-                }
-                10, 13 -> { // Enter
-                    themeManager.setCurrentTheme(themes[selectedThemeIndex])
-                    // Show confirmation briefly
-                    showMessage("Theme changed to: ${themes[selectedThemeIndex].name}", 1000)
-                }
-                27, 113, 81 -> { // ESC, q, Q
-                    running = false
+            term.putCharacter('\n')
+            term.setForegroundColor(lanternaColors.secondary)
+            term.putString("═══ PREVIEW ═══\n")
+            
+            term.setForegroundColor(lanternaColors.primary)
+            term.putString("Primary ")
+            term.setForegroundColor(lanternaColors.secondary)
+            term.putString("Secondary ")
+            term.setForegroundColor(lanternaColors.accent)
+            term.putString("Accent ")
+            term.setForegroundColor(lanternaColors.success)
+            term.putString("Success ")
+            term.setForegroundColor(lanternaColors.warning)
+            term.putString("Warning ")
+            term.setForegroundColor(lanternaColors.error)
+            term.putString("Error\n")
+            
+            term.putCharacter('\n')
+            term.setForegroundColor(lanternaColors.textDim)
+            term.putString("Use ↑↓ (W/S) to navigate, ENTER to apply theme, ESC/Q to return\n")
+            term.flush()
+            
+            val keyStroke = term.pollInput()
+            keyStroke?.let { key ->
+                when {
+                    key.keyType == KeyType.ArrowUp || key.character?.lowercaseChar() == 'w' -> {
+                        selectedThemeIndex = if (selectedThemeIndex > 0) selectedThemeIndex - 1 else themes.size - 1
+                    }
+                    key.keyType == KeyType.ArrowDown || key.character?.lowercaseChar() == 's' -> {
+                        selectedThemeIndex = if (selectedThemeIndex < themes.size - 1) selectedThemeIndex + 1 else 0
+                    }
+                    key.keyType == KeyType.Enter -> {
+                        themeManager.setCurrentTheme(themes[selectedThemeIndex])
+                        // Show confirmation briefly
+                        showMessage("Theme changed to: ${themes[selectedThemeIndex].name}", 1000)
+                    }
+                    key.keyType == KeyType.Escape || key.character?.lowercaseChar() == 'q' -> {
+                        running = false
+                    }
                 }
             }
             
@@ -259,24 +307,30 @@ class ArcadeSystem {
      * Show error message
      */
     private suspend fun showError(message: String) {
+        val term = terminal!!
         var running = true
         while (running) {
-            session {
-                section {
-                    val theme = themeManager.currentTheme.toKotterColors()
-                    
-                    color(theme.error) { textLine("ERROR") }
-                    textLine()
-                    color(theme.text) { textLine(message) }
-                    textLine()
-                    color(theme.textDim) { textLine("Press ENTER or ESC to continue") }
-                }
-            }
+            term.clearScreen()
+            term.setCursorPosition(0, 0)
             
-            val input = getInput(100)
-            when (input) {
-                10, 13, 27 -> { // Enter, ESC
-                    running = false
+            val theme = themeManager.currentTheme.toLanternaColors()
+            
+            term.setForegroundColor(theme.error)
+            term.putString("ERROR\n\n")
+            
+            term.setForegroundColor(theme.text)
+            term.putString("${message}\n\n")
+            
+            term.setForegroundColor(theme.textDim)
+            term.putString("Press ENTER or ESC to continue\n")
+            term.flush()
+            
+            val keyStroke = term.pollInput()
+            keyStroke?.let { key ->
+                when {
+                    key.keyType == KeyType.Enter || key.keyType == KeyType.Escape -> {
+                        running = false
+                    }
                 }
             }
             
@@ -288,17 +342,20 @@ class ArcadeSystem {
      * Show temporary message
      */
     private suspend fun showMessage(message: String, durationMs: Long) {
+        val term = terminal!!
         val startTime = System.currentTimeMillis()
         
-        session {
-            section {
-                val theme = themeManager.currentTheme.toKotterColors()
-                
-                color(theme.success) { textLine(message) }
-                textLine()
-                color(theme.textDim) { textLine("This message will disappear in ${(durationMs - (System.currentTimeMillis() - startTime)) / 1000 + 1} seconds...") }
-            }
-        }
+        term.clearScreen()
+        term.setCursorPosition(0, 0)
+        
+        val theme = themeManager.currentTheme.toLanternaColors()
+        
+        term.setForegroundColor(theme.success)
+        term.putString("${message}\n\n")
+        
+        term.setForegroundColor(theme.textDim)
+        term.putString("This message will disappear in ${(durationMs - (System.currentTimeMillis() - startTime)) / 1000 + 1} seconds...\n")
+        term.flush()
         
         delay(durationMs)
     }
@@ -321,41 +378,50 @@ class ArcadeSystem {
      * Cycle through themes demo
      */
     suspend fun cycleThemesDemo() {
+        val term = initializeTerminal()
         val themes = themeManager.getAllThemes()
         themes.forEach { theme ->
             themeManager.setCurrentTheme(theme)
 
-            session {
-                section {
-                    val kotterColors = theme.toKotterColors()
+            term.clearScreen()
+            term.setCursorPosition(0, 0)
+            
+            val lanternaColors = theme.toLanternaColors()
 
-                    color(kotterColors.primary) {
-                        textLine("╔══════════════════════════════════════╗")
-                        textLine("║          THEME: ${theme.name.uppercase().padEnd(24)} ║")
-                        textLine("╚══════════════════════════════════════╝")
-                    }
+            term.setForegroundColor(lanternaColors.primary)
+            term.putString("╔══════════════════════════════════════╗\n")
+            term.putString("║          THEME: ${theme.name.uppercase().padEnd(24)} ║\n")
+            term.putString("╚══════════════════════════════════════╝\n")
 
-                    color(kotterColors.secondary) { textLine("Description: ${theme.description}") }
-                    textLine()
+            term.setForegroundColor(lanternaColors.secondary)
+            term.putString("Description: ${theme.description}\n\n")
 
-                    color(kotterColors.text) { textLine("Color preview:") }
-                    color(kotterColors.primary) { text("Primary ") }
-                    color(kotterColors.secondary) { text("Secondary ") }
-                    color(kotterColors.accent) { text("Accent ") }
-                    color(kotterColors.success) { text("Success ") }
-                    color(kotterColors.warning) { text("Warning ") }
-                    color(kotterColors.error) { textLine("Error") }
+            term.setForegroundColor(lanternaColors.text)
+            term.putString("Color preview:\n")
+            
+            term.setForegroundColor(lanternaColors.primary)
+            term.putString("Primary ")
+            term.setForegroundColor(lanternaColors.secondary)
+            term.putString("Secondary ")
+            term.setForegroundColor(lanternaColors.accent)
+            term.putString("Accent ")
+            term.setForegroundColor(lanternaColors.success)
+            term.putString("Success ")
+            term.setForegroundColor(lanternaColors.warning)
+            term.putString("Warning ")
+            term.setForegroundColor(lanternaColors.error)
+            term.putString("Error\n")
 
-                    textLine()
-                    color(kotterColors.textDim) { textLine("Press any key for next theme...") }
-                }
-            }
+            term.putCharacter('\n')
+            term.setForegroundColor(lanternaColors.textDim)
+            term.putString("Press any key for next theme...\n")
+            term.flush()
 
             // Wait for input or timeout
             val startTime = System.currentTimeMillis()
             while (System.currentTimeMillis() - startTime < 3000) {
-                if (System.`in`.available() > 0) {
-                    System.`in`.read()
+                val keyStroke = term.pollInput()
+                if (keyStroke != null) {
                     break
                 }
                 delay(50)
@@ -409,6 +475,10 @@ class ArcadeSystem {
     }
 
     fun cleanup() {
-        // Kotter handles cleanup automatically
+        terminal?.let { term ->
+            term.clearScreen()
+            term.exitPrivateMode()
+            term.close()
+        }
     }
 }
