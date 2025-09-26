@@ -30,7 +30,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
     
     // YAML for theme configuration
-    implementation("com.charleskorn.kaml:kaml:0.56.0")
+    implementation("com.charleskorn.kaml:kaml:0.97.0")
     
     // HTTP client for downloading themes from URLs
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
