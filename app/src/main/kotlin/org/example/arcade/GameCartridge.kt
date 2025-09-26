@@ -9,28 +9,27 @@ interface GameCartridge {
     val description: String
     val version: String
     val icon: String // ASCII art icon
-    
+
     /**
      * Initialize the game and start playing
      */
     suspend fun play(arcade: ArcadeSystem)
-    
+
     /**
      * Get the high scores for this game from the arcade system
      */
-    fun getHighScores(scoreManager: ScoreManager): List<ScoreEntry> {
-        return scoreManager.loadScores(name.lowercase())
-    }
-    
+    fun getHighScores(scoreManager: ScoreManager): List<ScoreEntry> = scoreManager.loadScores(name.lowercase())
+
     /**
      * Reset high scores for this game
      */
     fun resetHighScores(scoreManager: ScoreManager) {
         scoreManager.resetScores(name.lowercase())
     }
-    
+
     // Default implementations that delegate to arcade system
     fun getHighScores(): List<ScoreEntry> = emptyList()
+
     fun resetHighScores() = Unit
 }
 
@@ -41,5 +40,5 @@ data class ScoreEntry(
     val playerName: String,
     val score: Int,
     val date: String,
-    val level: Int = 1
+    val level: Int = 1,
 )

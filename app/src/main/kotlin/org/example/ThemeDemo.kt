@@ -1,9 +1,10 @@
 package org.example
 
-import org.example.arcade.theme.ThemeManager
-import com.varabyte.kotter.foundation.*
-import com.varabyte.kotter.foundation.text.*
+import com.varabyte.kotter.foundation.session
+import com.varabyte.kotter.foundation.text.color
+import com.varabyte.kotter.foundation.text.textLine
 import kotlinx.coroutines.runBlocking
+import org.example.arcade.theme.ThemeManager
 
 /**
  * Theme demo utility to showcase the theming system
@@ -11,9 +12,9 @@ import kotlinx.coroutines.runBlocking
 fun main(args: Array<String>) {
     println("🎨 ArcadeTUI Theme System Demo")
     println("==============================")
-    
+
     val themeManager = ThemeManager()
-    
+
     if (args.isNotEmpty() && args[0] == "--list") {
         println("Available themes:")
         themeManager.getAllThemes().forEach { theme ->
@@ -21,19 +22,19 @@ fun main(args: Array<String>) {
         }
         return
     }
-    
+
     if (args.isNotEmpty() && args[0] == "--demo") {
         println("Demonstrating all themes with Kotter...")
-        
+
         themeManager.getAllThemes().forEach { theme ->
             println("\n--- Theme: ${theme.name} ---")
             themeManager.setCurrentTheme(theme)
-            
+
             runBlocking {
                 session {
                     section {
                         val kotterColors = theme.toKotterColors()
-                        
+
                         color(kotterColors.primary) { textLine("Primary: ArcadeTUI Logo") }
                         color(kotterColors.secondary) { textLine("Secondary: Menu headers") }
                         color(kotterColors.accent) { textLine("Accent: Selected items") }
@@ -49,12 +50,12 @@ fun main(args: Array<String>) {
                     }
                 }
             }
-            
+
             Thread.sleep(2000) // Pause between themes
         }
         return
     }
-    
+
     // Default: show available themes and their colors
     themeManager.getAllThemes().forEach { theme ->
         println("\n=== ${theme.name.uppercase()} ===")
@@ -69,7 +70,7 @@ fun main(args: Array<String>) {
         println("  Warning: ${theme.colors.warning}")
         println("  Error: ${theme.colors.error}")
     }
-    
+
     println("\nUse --list to see just theme names")
     println("Use --demo to see themes in action with Kotter")
 }

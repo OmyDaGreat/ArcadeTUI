@@ -1,9 +1,11 @@
 package org.example.arcade
 
-import com.varabyte.kotter.foundation.*
-import com.varabyte.kotter.foundation.text.*
+import com.varabyte.kotter.foundation.session
+import com.varabyte.kotter.foundation.text.color
+import com.varabyte.kotter.foundation.text.text
+import com.varabyte.kotter.foundation.text.textLine
+import kotlinx.coroutines.delay
 import org.example.arcade.theme.ThemeManager
-import kotlinx.coroutines.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -14,52 +16,50 @@ class ArcadeSystem {
     private val scoreManager = ScoreManager()
     private val cartridges = mutableListOf<GameCartridge>()
     private val themeManager = ThemeManager()
-    
+
     fun addCartridge(cartridge: GameCartridge) {
         cartridges.add(cartridge)
     }
-    
+
     fun getScoreManager(): ScoreManager = scoreManager
-    
+
     fun getThemeManager(): ThemeManager = themeManager
-    
+
     /**
      * Get current date/time string for scores
      */
-    fun getCurrentDateTime(): String {
-        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
-    }
-    
+    fun getCurrentDateTime(): String = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+
     /**
      * Show main arcade menu using Kotter
      */
-    suspend fun showMainMenu() {
+    fun showMainMenu() {
         session {
             section {
                 val theme = themeManager.currentTheme.toKotterColors()
-                
+
                 // Show logo
-                color(theme.primary) { 
+                color(theme.primary) {
                     textLine(showArcadeLogo())
                 }
                 textLine()
-                
+
                 // Show games
                 color(theme.secondary) { textLine("═══ AVAILABLE CARTRIDGES ═══") }
-                
+
                 if (cartridges.isEmpty()) {
                     color(theme.error) { textLine("No cartridges loaded!") }
                 } else {
-                    cartridges.forEachIndexed { index, cartridge ->
+                    cartridges.forEach { cartridge ->
                         color(theme.accent) { text("► " + cartridge.icon + " " + cartridge.name) }
                         color(theme.textDim) { textLine("  " + cartridge.description) }
                     }
                 }
-                
+
                 textLine()
                 color(theme.secondary) { textLine("═══ THEMING SYSTEM DEMO ═══") }
                 color(theme.text) { textLine("Available themes:") }
-                
+
                 themeManager.getAllThemes().forEach { availableTheme ->
                     val isActive = availableTheme.name == themeManager.currentTheme.name
                     if (isActive) {
@@ -69,7 +69,7 @@ class ArcadeSystem {
                     }
                     color(theme.textDim) { textLine(" - ${availableTheme.description}") }
                 }
-                
+
                 textLine()
                 color(theme.secondary) { textLine("═══ THEME COLORS PREVIEW ═══") }
                 color(theme.primary) { text("Primary ") }
@@ -78,12 +78,12 @@ class ArcadeSystem {
                 color(theme.success) { text("Success ") }
                 color(theme.warning) { text("Warning ") }
                 color(theme.error) { textLine("Error") }
-                
+
                 color(theme.text) { text("Player ") }
                 color(theme.enemy) { text("Enemy ") }
                 color(theme.bullet) { text("Bullet ") }
                 color(theme.border) { textLine("Border") }
-                
+
                 textLine()
                 color(theme.textDim) { textLine("To cycle themes, run: gradle run --args=\"--cycle-themes\"") }
                 color(theme.textDim) { textLine("To see theme demo, run: gradle run --args=\"--theme-demo\"") }
@@ -91,7 +91,7 @@ class ArcadeSystem {
             }
         }
     }
-    
+
     /**
      * Cycle through themes demo
      */
@@ -99,20 +99,20 @@ class ArcadeSystem {
         val themes = themeManager.getAllThemes()
         themes.forEach { theme ->
             themeManager.setCurrentTheme(theme)
-            
+
             session {
                 section {
                     val kotterColors = theme.toKotterColors()
-                    
-                    color(kotterColors.primary) { 
+
+                    color(kotterColors.primary) {
                         textLine("╔══════════════════════════════════════╗")
                         textLine("║          THEME: ${theme.name.uppercase().padEnd(24)} ║")
                         textLine("╚══════════════════════════════════════╝")
                     }
-                    
+
                     color(kotterColors.secondary) { textLine("Description: ${theme.description}") }
                     textLine()
-                    
+
                     color(kotterColors.text) { textLine("Color preview:") }
                     color(kotterColors.primary) { text("Primary ") }
                     color(kotterColors.secondary) { text("Secondary ") }
@@ -120,12 +120,12 @@ class ArcadeSystem {
                     color(kotterColors.success) { text("Success ") }
                     color(kotterColors.warning) { text("Warning ") }
                     color(kotterColors.error) { textLine("Error") }
-                    
+
                     textLine()
                     color(kotterColors.textDim) { textLine("Press any key for next theme...") }
                 }
             }
-            
+
             // Wait for input or timeout
             val startTime = System.currentTimeMillis()
             while (System.currentTimeMillis() - startTime < 3000) {
@@ -133,15 +133,15 @@ class ArcadeSystem {
                     System.`in`.read()
                     break
                 }
-                Thread.sleep(50)
+                delay(50)
             }
         }
-        
+
         println("Theme cycling complete!")
     }
-    
-    private fun showArcadeLogo(): String {
-        return """
+
+    private fun showArcadeLogo(): String =
+        """
 ╔═══════════════════════════════════════════════════════════╗
 ║    ▄▄▄     ██▀███    ██▀████▄  ▄██████▄   ███████▄       ║
 ║   ▀█████   ██   ██   ██   ████ ██▄▄▄▄▄██  ████▀▀███      ║
@@ -154,19 +154,23 @@ class ArcadeSystem {
 ║        🕹️  Insert Coin to Play  🕹️                      ║
 ╚═══════════════════════════════════════════════════════════╝
         """.trimIndent()
-    }
-    
+
     /**
      * Legacy methods for backward compatibility during migration
      */
     fun clearScreen() {
         println("\u001B[2J\u001B[H")
     }
-    
-    fun printAt(x: Int, y: Int, text: String, color: String = "") {
-        print("\u001B[${y};${x}H$color$text\u001B[0m")
+
+    fun printAt(
+        x: Int,
+        y: Int,
+        text: String,
+        color: String = "",
+    ) {
+        print("\u001B[$y;${x}H$color$text\u001B[0m")
     }
-    
+
     fun getInput(timeoutMs: Long = 50): Int? {
         // For backward compatibility with games during migration
         return System.`in`.let { input ->
@@ -178,7 +182,7 @@ class ArcadeSystem {
             }
         }
     }
-    
+
     fun cleanup() {
         // Kotter handles cleanup automatically
     }
