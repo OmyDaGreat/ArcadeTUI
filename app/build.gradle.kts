@@ -23,12 +23,17 @@ repositories {
 }
 
 dependencies {
-    // TUI and console handling
-    implementation("org.jline:jline-terminal:3.25.1")
-    implementation("org.jline:jline-reader:3.25.1")
+    // TUI using Kotter
+    implementation("com.varabyte.kotter:kotter:1.2.1")
     
     // JSON for persistent scoreboards
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    
+    // YAML for theme configuration
+    implementation("com.charleskorn.kaml:kaml:0.56.0")
+    
+    // HTTP client for downloading themes from URLs
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     
     // Coroutines for game loops
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
