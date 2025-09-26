@@ -4,10 +4,12 @@ A retro-style terminal arcade system with persistent scoreboards, modular game c
 
 ## 🕹️ Features
 
-- **Retro TUI Interface**: Beautiful ASCII art with vintage styling powered by Kotter
+- **Interactive TUI Interface**: Beautiful ASCII art with vintage styling powered by Kotter
+- **Full Interactive Navigation**: Menu-driven interface with keyboard navigation and real-time updates
 - **Advanced Theming System**: 5 built-in themes + custom theme support with URL downloading
+- **Interactive Theme Selector**: Live theme switching with instant preview
 - **Modular Cartridge System**: Easy to add new games as virtual cartridges
-- **Persistent Scoreboards**: JSON-based high score tracking for each game
+- **Persistent Scoreboards**: JSON-based high score tracking for each game with interactive viewing
 - **Two Classic Games**:
   - 🧱 **TETRIS**: Classic falling blocks puzzle with full rotation and line clearing
   - 🚀 **GALAGA**: Space shooter with enemies, bullets, and progressive levels
@@ -55,11 +57,15 @@ themeManager.addThemeFromUrl("https://example.com/themes/matrix.yaml")
 ## 🎮 Controls
 
 ### Main Menu
-- `↑↓` - Navigate between game cartridges
-- `ENTER` - Launch selected game
-- `S` - View high scores
-- `T` - Theme selection (planned)
+- `↑↓` or `W/S` - Navigate between menu options
+- `ENTER` - Select menu option
 - `Q` - Quit arcade
+
+### Interactive Features
+- **Game Selection**: Browse and launch games directly from the main menu
+- **High Scores**: View top scores for all games
+- **Theme Selector**: Interactive theme switching with live preview
+- **Error Handling**: User-friendly error messages with continue prompts
 
 ### Tetris Controls
 - `A/D` - Move pieces left/right
@@ -197,11 +203,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **URL Theme Downloads** with YAML/JSON support  
 - ✅ **Kotter Integration** for modern TUI rendering
 - ✅ **Theme Persistence** and management
+- ✅ **Interactive Theme Selection Menu** with live preview
+- ✅ **Interactive Main Menu** with keyboard navigation
+- ✅ **Game Launching System** with error handling
+- ✅ **Interactive High Scores Viewer** for all games
 
 ### Planned 🔄
-- 🔄 **Interactive Theme Selection Menu** with live preview
-- 🔄 **Game Theme Integration** - convert games to use themed colors
+- 🔄 **Game Theme Integration** - convert games to use themed colors consistently
 - 🔄 **Theme Editor UI** for creating custom themes interactively
+- 🔄 **Enhanced Menu Animations** with smooth transitions
 
 ### Future Ideas 💡
 - More classic arcade games (Pac-Man, Space Invaders, etc.)
