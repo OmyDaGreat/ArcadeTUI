@@ -144,3 +144,6 @@ replay_pid*
 
 # Ignore Gradle build output directory
 build
+
+# ArcadeTUI specific files
+arcade-data/
