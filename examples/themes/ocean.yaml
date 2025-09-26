@@ -1,0 +1,24 @@
+name: "Ocean"
+description: "Calming blue ocean theme with white highlights"
+version: "1.0"
+author: "ArcadeTUI Community"
+colors:
+  primary: "#0080FF"      # Ocean Blue
+  secondary: "#004080"    # Deep Blue
+  accent: "#00FFFF"       # Cyan
+  background: "#000040"   # Dark Blue
+  text: "#FFFFFF"         # White
+  textDim: "#8080FF"      # Light Blue
+  success: "#00FF80"      # Sea Green
+  warning: "#FFFF00"      # Yellow
+  error: "#FF4040"        # Coral Red
+  gameArea: "#FFFFFF"     # White
+  player: "#00FFFF"       # Cyan
+  enemy: "#FF4040"        # Coral Red
+  bullet: "#FFFFFF"       # White
+  border: "#004080"       # Deep Blue
+styles:
+  logoStyle: "bold"
+  menuStyle: "normal"
+  selectedStyle: "bold"
+  borderStyle: "normal"

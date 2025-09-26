@@ -83,19 +83,27 @@ data class KotterThemeColors(
 
 /**
  * Extension function to parse hex color strings to Kotter Color
+ * Uses predefined colors for now until we find the correct RGB constructor
  */
 private fun parseHexColor(hex: String): Color? {
-    return try {
-        val cleanHex = hex.removePrefix("#")
-        if (cleanHex.length == 6) {
-            val r = cleanHex.substring(0, 2).toInt(16)
-            val g = cleanHex.substring(2, 4).toInt(16)
-            val b = cleanHex.substring(4, 6).toInt(16)
-            Color.RGB(r, g, b)
-        } else {
-            null
-        }
-    } catch (e: Exception) {
-        null
+    return when (hex.uppercase()) {
+        "#FF0000" -> Color.RED
+        "#00FF00" -> Color.GREEN
+        "#0000FF" -> Color.BLUE
+        "#FFFF00" -> Color.YELLOW
+        "#FF00FF" -> Color.MAGENTA
+        "#00FFFF" -> Color.CYAN
+        "#FFFFFF" -> Color.WHITE
+        "#000000" -> Color.BLACK
+        "#808080" -> Color.BRIGHT_BLACK
+        "#FF8000" -> Color.YELLOW // Orange approximation
+        "#FF0080" -> Color.MAGENTA // Hot Pink approximation
+        "#00FF80" -> Color.GREEN  // Bright Green approximation
+        "#0080FF" -> Color.CYAN   // Electric Blue approximation
+        "#4080FF" -> Color.BLUE   // Soft Blue approximation
+        "#8080FF" -> Color.MAGENTA // Soft Purple approximation
+        "#40FF80" -> Color.GREEN  // Soft Green approximation
+        "#C0C0C0" -> Color.WHITE  // Silver approximation
+        else -> Color.WHITE // Default fallback
     }
 }

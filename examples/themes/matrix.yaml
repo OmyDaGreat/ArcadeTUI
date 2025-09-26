@@ -1,0 +1,24 @@
+name: "Matrix"
+description: "Green-on-black matrix theme inspired by the movie"
+version: "1.0"
+author: "ArcadeTUI Community"
+colors:
+  primary: "#00FF00"      # Bright Green
+  secondary: "#008000"    # Green
+  accent: "#00FF00"       # Bright Green
+  background: "#000000"   # Black
+  text: "#00FF00"         # Bright Green
+  textDim: "#008000"      # Dark Green
+  success: "#00FF00"      # Bright Green
+  warning: "#FFFF00"      # Yellow
+  error: "#FF0000"        # Red
+  gameArea: "#00FF00"     # Bright Green
+  player: "#FFFFFF"       # White
+  enemy: "#FF0000"        # Red
+  bullet: "#00FF00"       # Bright Green
+  border: "#008000"       # Green
+styles:
+  logoStyle: "bold"
+  menuStyle: "normal"
+  selectedStyle: "bold"
+  borderStyle: "normal"

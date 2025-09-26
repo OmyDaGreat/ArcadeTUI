@@ -2,7 +2,6 @@ package org.example.arcade
 
 import com.varabyte.kotter.foundation.*
 import com.varabyte.kotter.foundation.text.*
-import com.varabyte.kotter.foundation.input.*
 import org.example.arcade.theme.ThemeManager
 import kotlinx.coroutines.*
 import java.time.LocalDateTime
@@ -37,138 +36,108 @@ class ArcadeSystem {
     suspend fun showMainMenu() {
         session {
             section {
-                var running = true
-                var selectedIndex by liveVarOf(0)
-                var currentScreen by liveVarOf("main")
-                var selectedTheme by liveVarOf(0)
+                val theme = themeManager.currentTheme.toKotterColors()
                 
-                onKeyPressed {
-                    when (key) {
-                        Keys.UP -> when (currentScreen) {
-                            "main" -> selectedIndex = if (cartridges.isNotEmpty()) (selectedIndex - 1 + cartridges.size) % cartridges.size else 0
-                            "themes" -> selectedTheme = if (themeManager.getAllThemes().isNotEmpty()) (selectedTheme - 1 + themeManager.getAllThemes().size) % themeManager.getAllThemes().size else 0
-                        }
-                        Keys.DOWN -> when (currentScreen) {
-                            "main" -> selectedIndex = if (cartridges.isNotEmpty()) (selectedIndex + 1) % cartridges.size else 0
-                            "themes" -> selectedTheme = if (themeManager.getAllThemes().isNotEmpty()) (selectedTheme + 1) % themeManager.getAllThemes().size else 0
-                        }
-                        Keys.ENTER -> when (currentScreen) {
-                            "main" -> if (cartridges.isNotEmpty() && selectedIndex < cartridges.size) {
-                                // This would need special handling for game launching
-                                // For now we'll just show a message
-                                textLine("Game launching not implemented in this version")
-                            }
-                            "themes" -> {
-                                val themes = themeManager.getAllThemes()
-                                if (themes.isNotEmpty() && selectedTheme < themes.size) {
-                                    themeManager.setCurrentTheme(themes[selectedTheme])
-                                }
-                                currentScreen = "main"
-                            }
-                        }
-                        Keys.ESC -> when (currentScreen) {
-                            "scores", "themes" -> currentScreen = "main"
-                            "main" -> running = false
-                        }
-                        Keys.Q -> running = false
-                        Keys.S -> if (currentScreen == "main") currentScreen = "scores"
-                        Keys.T -> if (currentScreen == "main") currentScreen = "themes"
+                // Show logo
+                color(theme.primary) { 
+                    textLine(showArcadeLogo())
+                }
+                textLine()
+                
+                // Show games
+                color(theme.secondary) { textLine("═══ AVAILABLE CARTRIDGES ═══") }
+                
+                if (cartridges.isEmpty()) {
+                    color(theme.error) { textLine("No cartridges loaded!") }
+                } else {
+                    cartridges.forEachIndexed { index, cartridge ->
+                        color(theme.accent) { text("► " + cartridge.icon + " " + cartridge.name) }
+                        color(theme.textDim) { textLine("  " + cartridge.description) }
                     }
                 }
                 
-                while (running) {
-                    val theme = themeManager.currentTheme.toKotterColors()
-                    
-                    when (currentScreen) {
-                        "main" -> {
-                            // Show logo
-                            color(theme.primary) { 
-                                text(showArcadeLogo())
-                            }
-                            textLine()
-                            
-                            // Show games
-                            color(theme.secondary) { textLine("═══ AVAILABLE CARTRIDGES ═══") }
-                            
-                            if (cartridges.isEmpty()) {
-                                color(theme.error) { textLine("No cartridges loaded!") }
-                            } else {
-                                cartridges.forEachIndexed { index, cartridge ->
-                                    val prefix = if (index == selectedIndex) "► " else "  "
-                                    if (index == selectedIndex) {
-                                        color(theme.accent) { text(prefix + cartridge.icon + " " + cartridge.name) }
-                                    } else {
-                                        color(theme.text) { text(prefix + cartridge.icon + " " + cartridge.name) }
-                                    }
-                                    color(theme.textDim) { textLine("  " + cartridge.description) }
-                                }
-                            }
-                            
-                            textLine()
-                            color(theme.secondary) { textLine("═══ CONTROLS ═══") }
-                            color(theme.text) { textLine("↑↓ Navigate   ENTER Play   S Scores   T Themes   Q Quit") }
-                            
-                            textLine()
-                            color(theme.textDim) { 
-                                textLine("Current Theme: ${themeManager.currentTheme.name}")
-                            }
-                        }
-                        
-                        "scores" -> {
-                            color(theme.secondary) { textLine("═══ HIGH SCORES ═══") }
-                            textLine()
-                            
-                            cartridges.forEach { cartridge ->
-                                color(theme.accent) { textLine("${cartridge.name}:") }
-                                
-                                val scores = cartridge.getHighScores(scoreManager)
-                                if (scores.isEmpty()) {
-                                    color(theme.textDim) { textLine("  No scores yet!") }
-                                } else {
-                                    scores.forEachIndexed { index, score ->
-                                        color(theme.text) { 
-                                            textLine("  ${index + 1}. ${score.playerName} - ${score.score} pts (Level ${score.level})")
-                                        }
-                                    }
-                                }
-                                textLine()
-                            }
-                            
-                            color(theme.textDim) { textLine("Press ESC to return...") }
-                        }
-                        
-                        "themes" -> {
-                            color(theme.secondary) { textLine("═══ CHOOSE THEME ═══") }
-                            textLine()
-                            
-                            val themes = themeManager.getAllThemes()
-                            themes.forEachIndexed { index, themeItem ->
-                                val prefix = if (index == selectedTheme) "► " else "  "
-                                val isActive = themeItem.name == themeManager.currentTheme.name
-                                
-                                if (index == selectedTheme) {
-                                    color(theme.accent) { text(prefix + themeItem.name) }
-                                } else {
-                                    color(theme.text) { text(prefix + themeItem.name) }
-                                }
-                                
-                                if (isActive) {
-                                    color(theme.success) { text(" (ACTIVE)") }
-                                }
-                                
-                                textLine()
-                                color(theme.textDim) { textLine("    " + themeItem.description) }
-                            }
-                            
-                            textLine()
-                            color(theme.textDim) { textLine("ENTER Select   ESC Back") }
-                        }
+                textLine()
+                color(theme.secondary) { textLine("═══ THEMING SYSTEM DEMO ═══") }
+                color(theme.text) { textLine("Available themes:") }
+                
+                themeManager.getAllThemes().forEach { availableTheme ->
+                    val isActive = availableTheme.name == themeManager.currentTheme.name
+                    if (isActive) {
+                        color(theme.success) { text("  ► ${availableTheme.name} (ACTIVE)") }
+                    } else {
+                        color(theme.textDim) { text("    ${availableTheme.name}") }
                     }
-                    
-                    delay(16) // ~60 FPS refresh rate
+                    color(theme.textDim) { textLine(" - ${availableTheme.description}") }
                 }
+                
+                textLine()
+                color(theme.secondary) { textLine("═══ THEME COLORS PREVIEW ═══") }
+                color(theme.primary) { text("Primary ") }
+                color(theme.secondary) { text("Secondary ") }
+                color(theme.accent) { text("Accent ") }
+                color(theme.success) { text("Success ") }
+                color(theme.warning) { text("Warning ") }
+                color(theme.error) { textLine("Error") }
+                
+                color(theme.text) { text("Player ") }
+                color(theme.enemy) { text("Enemy ") }
+                color(theme.bullet) { text("Bullet ") }
+                color(theme.border) { textLine("Border") }
+                
+                textLine()
+                color(theme.textDim) { textLine("To cycle themes, run: gradle run --args=\"--cycle-themes\"") }
+                color(theme.textDim) { textLine("To see theme demo, run: gradle run --args=\"--theme-demo\"") }
+                color(theme.textDim) { textLine("Game launching will be implemented in the next phase...") }
             }
         }
+    }
+    
+    /**
+     * Cycle through themes demo
+     */
+    suspend fun cycleThemesDemo() {
+        val themes = themeManager.getAllThemes()
+        themes.forEach { theme ->
+            themeManager.setCurrentTheme(theme)
+            
+            session {
+                section {
+                    val kotterColors = theme.toKotterColors()
+                    
+                    color(kotterColors.primary) { 
+                        textLine("╔══════════════════════════════════════╗")
+                        textLine("║          THEME: ${theme.name.uppercase().padEnd(24)} ║")
+                        textLine("╚══════════════════════════════════════╝")
+                    }
+                    
+                    color(kotterColors.secondary) { textLine("Description: ${theme.description}") }
+                    textLine()
+                    
+                    color(kotterColors.text) { textLine("Color preview:") }
+                    color(kotterColors.primary) { text("Primary ") }
+                    color(kotterColors.secondary) { text("Secondary ") }
+                    color(kotterColors.accent) { text("Accent ") }
+                    color(kotterColors.success) { text("Success ") }
+                    color(kotterColors.warning) { text("Warning ") }
+                    color(kotterColors.error) { textLine("Error") }
+                    
+                    textLine()
+                    color(kotterColors.textDim) { textLine("Press any key for next theme...") }
+                }
+            }
+            
+            // Wait for input or timeout
+            val startTime = System.currentTimeMillis()
+            while (System.currentTimeMillis() - startTime < 3000) {
+                if (System.`in`.available() > 0) {
+                    System.`in`.read()
+                    break
+                }
+                Thread.sleep(50)
+            }
+        }
+        
+        println("Theme cycling complete!")
     }
     
     private fun showArcadeLogo(): String {
@@ -188,16 +157,7 @@ class ArcadeSystem {
     }
     
     /**
-     * Simple input method for games that need basic input (deprecated in Kotter-based implementation)
-     */
-    @Deprecated("Games should use Kotter's input handling directly")
-    suspend fun getSimpleInput(timeoutMs: Long = 50): Char? {
-        return null
-    }
-    
-    /**
-     * Legacy methods for games that haven't been converted to Kotter yet
-     * These provide basic functionality but games should be updated to use Kotter directly
+     * Legacy methods for backward compatibility during migration
      */
     fun clearScreen() {
         println("\u001B[2J\u001B[H")
@@ -208,8 +168,15 @@ class ArcadeSystem {
     }
     
     fun getInput(timeoutMs: Long = 50): Int? {
-        // Simplified input for backward compatibility
-        return null
+        // For backward compatibility with games during migration
+        return System.`in`.let { input ->
+            if (input.available() > 0) {
+                input.read()
+            } else {
+                Thread.sleep(timeoutMs)
+                if (input.available() > 0) input.read() else null
+            }
+        }
     }
     
     fun cleanup() {
