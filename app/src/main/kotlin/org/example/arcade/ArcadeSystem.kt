@@ -31,65 +31,290 @@ class ArcadeSystem {
     fun getCurrentDateTime(): String = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
 
     /**
-     * Show main arcade menu using Kotter
+     * Show interactive main arcade menu using Kotter
      */
-    fun showMainMenu() {
+    suspend fun showMainMenu() {
+        var selectedIndex = 0
+        val menuItems = mutableListOf<MenuItem>()
+        
+        // Add game cartridges to menu
+        cartridges.forEach { cartridge ->
+            menuItems.add(MenuItem.Game(cartridge))
+        }
+        
+        // Add other menu options
+        menuItems.add(MenuItem.HighScores)
+        menuItems.add(MenuItem.ThemeSelector)
+        menuItems.add(MenuItem.Quit)
+        
+        var running = true
+        while (running) {
+            // Display menu using Kotter session
+            session {
+                section {
+                    val theme = themeManager.currentTheme.toKotterColors()
+                    
+                    // Show logo
+                    color(theme.primary) {
+                        textLine(showArcadeLogo())
+                    }
+                    textLine()
+                    
+                    // Show menu items
+                    color(theme.secondary) { textLine("═══ MAIN MENU ═══") }
+                    textLine()
+                    
+                    menuItems.forEachIndexed { index, item ->
+                        val isSelected = index == selectedIndex
+                        if (isSelected) {
+                            color(theme.accent) { 
+                                text("► ${item.displayName}")
+                            }
+                        } else {
+                            color(theme.text) { 
+                                text("  ${item.displayName}")
+                            }
+                        }
+                        color(theme.textDim) { textLine("  ${item.description}") }
+                    }
+                    
+                    textLine()
+                    color(theme.textDim) { textLine("Use ↑↓ (W/S) to navigate, ENTER to select, Q to quit") }
+                    color(theme.textDim) { textLine("Current theme: ${themeManager.currentTheme.name}") }
+                }
+            }
+            
+            // Handle input
+            val input = getInput(100)
+            when (input) {
+                // Arrow keys or WASD for navigation
+                65, 119, 87 -> { // Up arrow, w, W
+                    selectedIndex = if (selectedIndex > 0) selectedIndex - 1 else menuItems.size - 1
+                }
+                66, 115, 83 -> { // Down arrow, s, S
+                    selectedIndex = if (selectedIndex < menuItems.size - 1) selectedIndex + 1 else 0
+                }
+                10, 13 -> { // Enter
+                    when (val item = menuItems[selectedIndex]) {
+                        is MenuItem.Game -> {
+                            // Launch the game
+                            launchGame(item.cartridge)
+                        }
+                        MenuItem.HighScores -> {
+                            showHighScores()
+                        }
+                        MenuItem.ThemeSelector -> {
+                            showThemeSelector()
+                        }
+                        MenuItem.Quit -> {
+                            running = false
+                        }
+                    }
+                }
+                113, 81 -> { // q, Q
+                    running = false
+                }
+            }
+            
+            delay(50) // Small delay to prevent excessive CPU usage
+        }
+    }
+    
+    /**
+     * Launch a game cartridge
+     */
+    private suspend fun launchGame(cartridge: GameCartridge) {
+        try {
+            cartridge.play(this)
+        } catch (e: Exception) {
+            showError("Error launching game: ${e.message}")
+        }
+    }
+    
+    /**
+     * Show high scores menu
+     */
+    private suspend fun showHighScores() {
+        var running = true
+        while (running) {
+            session {
+                section {
+                    val theme = themeManager.currentTheme.toKotterColors()
+                    
+                    color(theme.primary) { textLine("═══ HIGH SCORES ═══") }
+                    textLine()
+                    
+                    if (cartridges.isEmpty()) {
+                        color(theme.textDim) { textLine("No games available") }
+                    } else {
+                        cartridges.forEach { cartridge ->
+                            color(theme.secondary) { textLine("${cartridge.name}:") }
+                            val scores = scoreManager.loadScores(cartridge.name.lowercase())
+                            if (scores.isEmpty()) {
+                                color(theme.textDim) { textLine("  No scores yet") }
+                            } else {
+                                scores.take(5).forEach { score ->
+                                    color(theme.text) { 
+                                        textLine("  ${score.playerName}: ${score.score} (${score.date})")
+                                    }
+                                }
+                            }
+                            textLine()
+                        }
+                    }
+                    
+                    color(theme.textDim) { textLine("Press ESC or Q to return to main menu") }
+                }
+            }
+            
+            val input = getInput(100)
+            when (input) {
+                27, 113, 81 -> { // ESC, q, Q
+                    running = false
+                }
+            }
+            
+            delay(50)
+        }
+    }
+    
+    /**
+     * Show theme selector menu
+     */
+    private suspend fun showThemeSelector() {
+        var selectedThemeIndex = themeManager.getAllThemes().indexOfFirst { 
+            it.name == themeManager.currentTheme.name 
+        }.takeIf { it >= 0 } ?: 0
+        
+        val themes = themeManager.getAllThemes()
+        var running = true
+        
+        while (running) {
+            session {
+                section {
+                    val currentTheme = themes[selectedThemeIndex]
+                    val kotterColors = currentTheme.toKotterColors()
+                    
+                    color(kotterColors.primary) { textLine("═══ THEME SELECTOR ═══") }
+                    textLine()
+                    
+                    themes.forEachIndexed { index, theme ->
+                        val isSelected = index == selectedThemeIndex
+                        val isActive = theme.name == themeManager.currentTheme.name
+                        
+                        when {
+                            isSelected && isActive -> {
+                                color(kotterColors.success) { text("► ${theme.name} (ACTIVE)") }
+                            }
+                            isSelected -> {
+                                color(kotterColors.accent) { text("► ${theme.name}") }
+                            }
+                            isActive -> {
+                                color(kotterColors.success) { text("  ${theme.name} (ACTIVE)") }
+                            }
+                            else -> {
+                                color(kotterColors.text) { text("  ${theme.name}") }
+                            }
+                        }
+                        color(kotterColors.textDim) { textLine(" - ${theme.description}") }
+                    }
+                    
+                    textLine()
+                    color(kotterColors.secondary) { textLine("═══ PREVIEW ═══") }
+                    color(kotterColors.primary) { text("Primary ") }
+                    color(kotterColors.secondary) { text("Secondary ") }
+                    color(kotterColors.accent) { text("Accent ") }
+                    color(kotterColors.success) { text("Success ") }
+                    color(kotterColors.warning) { text("Warning ") }
+                    color(kotterColors.error) { textLine("Error") }
+                    
+                    textLine()
+                    color(kotterColors.textDim) { textLine("Use ↑↓ (W/S) to navigate, ENTER to apply theme, ESC/Q to return") }
+                }
+            }
+            
+            val input = getInput(100)
+            when (input) {
+                65, 119, 87 -> { // Up arrow, w, W
+                    selectedThemeIndex = if (selectedThemeIndex > 0) selectedThemeIndex - 1 else themes.size - 1
+                }
+                66, 115, 83 -> { // Down arrow, s, S
+                    selectedThemeIndex = if (selectedThemeIndex < themes.size - 1) selectedThemeIndex + 1 else 0
+                }
+                10, 13 -> { // Enter
+                    themeManager.setCurrentTheme(themes[selectedThemeIndex])
+                    // Show confirmation briefly
+                    showMessage("Theme changed to: ${themes[selectedThemeIndex].name}", 1000)
+                }
+                27, 113, 81 -> { // ESC, q, Q
+                    running = false
+                }
+            }
+            
+            delay(50)
+        }
+    }
+    
+    /**
+     * Show error message
+     */
+    private suspend fun showError(message: String) {
+        var running = true
+        while (running) {
+            session {
+                section {
+                    val theme = themeManager.currentTheme.toKotterColors()
+                    
+                    color(theme.error) { textLine("ERROR") }
+                    textLine()
+                    color(theme.text) { textLine(message) }
+                    textLine()
+                    color(theme.textDim) { textLine("Press ENTER or ESC to continue") }
+                }
+            }
+            
+            val input = getInput(100)
+            when (input) {
+                10, 13, 27 -> { // Enter, ESC
+                    running = false
+                }
+            }
+            
+            delay(50)
+        }
+    }
+    
+    /**
+     * Show temporary message
+     */
+    private suspend fun showMessage(message: String, durationMs: Long) {
+        val startTime = System.currentTimeMillis()
+        
         session {
             section {
                 val theme = themeManager.currentTheme.toKotterColors()
-
-                // Show logo
-                color(theme.primary) {
-                    textLine(showArcadeLogo())
-                }
+                
+                color(theme.success) { textLine(message) }
                 textLine()
-
-                // Show games
-                color(theme.secondary) { textLine("═══ AVAILABLE CARTRIDGES ═══") }
-
-                if (cartridges.isEmpty()) {
-                    color(theme.error) { textLine("No cartridges loaded!") }
-                } else {
-                    cartridges.forEach { cartridge ->
-                        color(theme.accent) { text("► " + cartridge.icon + " " + cartridge.name) }
-                        color(theme.textDim) { textLine("  " + cartridge.description) }
-                    }
-                }
-
-                textLine()
-                color(theme.secondary) { textLine("═══ THEMING SYSTEM DEMO ═══") }
-                color(theme.text) { textLine("Available themes:") }
-
-                themeManager.getAllThemes().forEach { availableTheme ->
-                    val isActive = availableTheme.name == themeManager.currentTheme.name
-                    if (isActive) {
-                        color(theme.success) { text("  ► ${availableTheme.name} (ACTIVE)") }
-                    } else {
-                        color(theme.textDim) { text("    ${availableTheme.name}") }
-                    }
-                    color(theme.textDim) { textLine(" - ${availableTheme.description}") }
-                }
-
-                textLine()
-                color(theme.secondary) { textLine("═══ THEME COLORS PREVIEW ═══") }
-                color(theme.primary) { text("Primary ") }
-                color(theme.secondary) { text("Secondary ") }
-                color(theme.accent) { text("Accent ") }
-                color(theme.success) { text("Success ") }
-                color(theme.warning) { text("Warning ") }
-                color(theme.error) { textLine("Error") }
-
-                color(theme.text) { text("Player ") }
-                color(theme.enemy) { text("Enemy ") }
-                color(theme.bullet) { text("Bullet ") }
-                color(theme.border) { textLine("Border") }
-
-                textLine()
-                color(theme.textDim) { textLine("To cycle themes, run: gradle run --args=\"--cycle-themes\"") }
-                color(theme.textDim) { textLine("To see theme demo, run: gradle run --args=\"--theme-demo\"") }
-                color(theme.textDim) { textLine("Game launching will be implemented in the next phase...") }
+                color(theme.textDim) { textLine("This message will disappear in ${(durationMs - (System.currentTimeMillis() - startTime)) / 1000 + 1} seconds...") }
             }
         }
+        
+        delay(durationMs)
+    }
+    
+    /**
+     * Menu item types for navigation
+     */
+    private sealed class MenuItem(val displayName: String, val description: String) {
+        data class Game(val cartridge: GameCartridge) : MenuItem(
+            "${cartridge.icon} ${cartridge.name}",
+            cartridge.description
+        )
+        
+        object HighScores : MenuItem("📊 High Scores", "View top scores for all games")
+        object ThemeSelector : MenuItem("🎨 Themes", "Change visual theme")
+        object Quit : MenuItem("❌ Quit", "Exit ArcadeTUI")
     }
 
     /**
