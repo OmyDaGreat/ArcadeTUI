@@ -12,6 +12,9 @@ plugins {
 
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+    
+    // Kotlin serialization for JSON scoreboards
+    kotlin("plugin.serialization") version "2.2.20"
 }
 
 repositories {
@@ -20,8 +23,15 @@ repositories {
 }
 
 dependencies {
-    // This dependency is used by the application.
-    implementation(libs.guava)
+    // TUI and console handling
+    implementation("org.jline:jline-terminal:3.25.1")
+    implementation("org.jline:jline-reader:3.25.1")
+    
+    // JSON for persistent scoreboards
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+    
+    // Coroutines for game loops
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 }
 
 testing {
