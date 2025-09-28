@@ -12,23 +12,6 @@ suspend fun main(args: Array<String>) {
     val arcade = ArcadeSystem()
 
     try {
-        // Handle special command line arguments
-        when {
-            args.contains("--cycle-themes") -> {
-                println("🎨 Cycling through all available themes...")
-                arcade.cycleThemesDemo()
-                return
-            }
-            args.contains("--theme-demo") -> {
-                println("🎨 Theme Demo Mode")
-                println("Available themes: ${arcade.getThemeManager().getAllThemes().size}")
-                arcade.getThemeManager().getAllThemes().forEach { theme ->
-                    println("- ${theme.name}: ${theme.description}")
-                }
-                return
-            }
-        }
-
         println("🕹️  Starting ArcadeTUI...")
 
         // Load game cartridges

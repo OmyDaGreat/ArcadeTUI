@@ -23,15 +23,6 @@ A retro-style terminal arcade system with persistent scoreboards, modular game c
 - **Dark**: Muted colors for low-light environments  
 - **Retro**: Classic 80s arcade orange/magenta palette
 
-### Theme Commands
-```bash
-# See available themes
-gradle run --args="--theme-demo"
-
-# Cycle through all themes
-gradle run --args="--cycle-themes"
-```
-
 ### Custom Theme Support
 Create custom themes in YAML format:
 ```yaml
@@ -96,10 +87,6 @@ gradle build
 
 # Run the arcade
 gradle run
-
-# Theme demos
-gradle run --args="--theme-demo"
-gradle run --args="--cycle-themes"
 ```
 
 ## 🛠️ Technology Stack
