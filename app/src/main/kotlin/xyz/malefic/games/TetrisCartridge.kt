@@ -1,9 +1,9 @@
-package org.example.games
+package xyz.malefic.games
 
 import kotlinx.coroutines.delay
-import org.example.arcade.ArcadeSystem
-import org.example.arcade.GameCartridge
-import org.example.arcade.ScoreEntry
+import xyz.malefic.arcade.ArcadeSystem
+import xyz.malefic.arcade.GameCartridge
+import xyz.malefic.arcade.ScoreEntry
 import kotlin.random.Random
 
 /**

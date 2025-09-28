@@ -1,4 +1,4 @@
-package org.example.arcade
+package xyz.malefic.arcade
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json

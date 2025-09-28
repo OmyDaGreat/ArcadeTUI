@@ -1,6 +1,6 @@
-package org.example
+package xyz.malefic
 
-import org.example.arcade.theme.ThemeManager
+import xyz.malefic.arcade.theme.ThemeManager
 import java.io.File
 
 /**

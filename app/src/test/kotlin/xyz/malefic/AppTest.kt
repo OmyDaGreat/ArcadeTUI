@@ -1,7 +1,7 @@
 /*
  * ArcadeTUI Test Suite
  */
-package org.example
+package xyz.malefic
 
 import kotlin.test.Test
 import kotlin.test.assertTrue

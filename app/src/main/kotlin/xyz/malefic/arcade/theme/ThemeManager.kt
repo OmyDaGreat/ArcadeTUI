@@ -1,4 +1,4 @@
-package org.example.arcade.theme
+package xyz.malefic.arcade.theme
 
 import com.charleskorn.kaml.Yaml
 import kotlinx.coroutines.CoroutineDispatcher

@@ -32,5 +32,5 @@ java {
 }
 
 application {
-    mainClass = "org.example.RunnerKt"
+    mainClass = "xyz.malefic.RunnerKt"
 }

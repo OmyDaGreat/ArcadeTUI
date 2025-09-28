@@ -1,4 +1,4 @@
-package org.example.arcade.theme
+package xyz.malefic.arcade.theme
 
 import com.googlecode.lanterna.TextColor
 import kotlinx.serialization.Serializable

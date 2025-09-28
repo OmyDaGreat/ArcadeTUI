@@ -1,4 +1,4 @@
-package org.example.arcade
+package xyz.malefic.arcade
 
 /**
  * Represents a game cartridge in the arcade system.

@@ -1,9 +1,9 @@
-package org.example
+package xyz.malefic
 
 import kotlinx.coroutines.delay
-import org.example.arcade.ArcadeSystem
-import org.example.games.GalagaCartridge
-import org.example.games.TetrisCartridge
+import xyz.malefic.arcade.ArcadeSystem
+import xyz.malefic.games.GalagaCartridge
+import xyz.malefic.games.TetrisCartridge
 
 /**
  * Main entry point for ArcadeTUI - A retro terminal arcade system
