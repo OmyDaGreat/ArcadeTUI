@@ -6,6 +6,7 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 import com.googlecode.lanterna.terminal.Terminal
 import kotlinx.coroutines.delay
 import xyz.malefic.arcade.theme.ThemeManager
+import xyz.malefic.util.newLine
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -73,12 +74,14 @@ class ArcadeSystem {
 
             // Show logo
             printWithColor(term, showArcadeLogo(), theme.primary)
-            term.putCharacter('\n')
+            term.newLine()
+            term.newLine()
 
             // Show menu items
             term.setForegroundColor(theme.secondary)
             term.putString("═══ MAIN MENU ═══")
-            term.putCharacter('\n')
+            term.newLine()
+            term.newLine()
 
             menuItems.forEachIndexed { index, item ->
                 val isSelected = index == selectedIndex
@@ -91,12 +94,15 @@ class ArcadeSystem {
                 }
                 term.setForegroundColor(theme.textDim)
                 term.putString("  ${item.description}")
+                term.newLine()
             }
 
-            term.putCharacter('\n')
+            term.newLine()
             term.setForegroundColor(theme.textDim)
             term.putString("Use ↑↓ (W/S) to navigate, ENTER to select, Q to quit")
+            term.newLine()
             term.putString("Current theme: ${themeManager.currentTheme.name}")
+            term.newLine()
 
             term.flush()
 
@@ -180,30 +186,38 @@ class ArcadeSystem {
 
             term.setForegroundColor(theme.primary)
             term.putString("═══ HIGH SCORES ═══")
+            term.newLine()
+            term.newLine()
 
             if (cartridges.isEmpty()) {
                 term.setForegroundColor(theme.textDim)
                 term.putString("No games available")
+                term.newLine()
             } else {
                 cartridges.forEach { cartridge ->
                     term.setForegroundColor(theme.secondary)
                     term.putString("${cartridge.name}:")
+                    term.newLine()
                     val scores = scoreManager.loadScores(cartridge.name.lowercase())
                     if (scores.isEmpty()) {
                         term.setForegroundColor(theme.textDim)
                         term.putString("  No scores yet")
+                        term.newLine()
                     } else {
                         scores.take(5).forEach { score ->
                             term.setForegroundColor(theme.text)
                             term.putString("  ${score.playerName}: ${score.score} (${score.date})")
+                            term.newLine()
                         }
                     }
-                    term.putCharacter('\n')
+                    term.newLine()
                 }
             }
 
+            term.newLine()
             term.setForegroundColor(theme.textDim)
             term.putString("Press ESC or Q to return to main menu")
+            term.newLine()
             term.flush()
 
             val keyStroke = term.pollInput()
@@ -243,8 +257,8 @@ class ArcadeSystem {
 
             term.setForegroundColor(lanternaColors.primary)
             term.putString("═══ THEME SELECTOR ═══")
-            term.putCharacter('\n')
-            term.putCharacter('\n')
+            term.newLine()
+            term.newLine()
 
             themes.forEachIndexed { index, theme ->
                 val isSelected = index == selectedThemeIndex
@@ -270,13 +284,14 @@ class ArcadeSystem {
                 }
                 term.setForegroundColor(lanternaColors.textDim)
                 term.putString(" - ${theme.description}")
-                term.putCharacter('\n')
+                term.newLine()
             }
 
-            term.putCharacter('\n')
+            term.newLine()
             term.setForegroundColor(lanternaColors.secondary)
             term.putString("═══ PREVIEW ═══")
-            term.putCharacter('\n')
+            term.newLine()
+            term.newLine()
 
             term.setForegroundColor(lanternaColors.primary)
             term.putString("Primary ")
@@ -290,12 +305,14 @@ class ArcadeSystem {
             term.putString("Warning ")
             term.setForegroundColor(lanternaColors.error)
             term.putString("Error")
-            term.putCharacter('\n')
+            term.newLine()
+            term.newLine()
+            term.newLine()
 
-            term.putCharacter('\n')
             term.setForegroundColor(lanternaColors.textDim)
             term.putString("Use ↑↓ (W/S) to navigate, ENTER to apply theme, ESC/Q to return")
-            term.putCharacter('\n')
+            term.newLine()
+            term.newLine()
             term.flush()
 
             val keyStroke = term.pollInput()
@@ -336,17 +353,17 @@ class ArcadeSystem {
 
             term.setForegroundColor(theme.error)
             term.putString("ERROR")
-            term.putCharacter('\n')
-            term.putCharacter('\n')
+            term.newLine()
+            term.newLine()
 
             term.setForegroundColor(theme.text)
             term.putString(message)
-            term.putCharacter('\n')
-            term.putCharacter('\n')
+            term.newLine()
+            term.newLine()
 
             term.setForegroundColor(theme.textDim)
             term.putString("Press ENTER or ESC to continue")
-            term.putCharacter('\n')
+            term.newLine()
             term.flush()
 
             val keyStroke = term.pollInput()
@@ -379,12 +396,12 @@ class ArcadeSystem {
 
         term.setForegroundColor(theme.success)
         term.putString(message)
-        term.putCharacter('\n')
-        term.putCharacter('\n')
+        term.newLine()
+        term.newLine()
 
         term.setForegroundColor(theme.textDim)
         term.putString("This message will disappear in ${(durationMs - (System.currentTimeMillis() - startTime)) / 1000 + 1} seconds...")
-        term.putCharacter('\n')
+        term.newLine()
         term.flush()
 
         delay(durationMs)
