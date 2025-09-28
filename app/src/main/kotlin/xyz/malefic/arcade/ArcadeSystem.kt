@@ -22,6 +22,8 @@ class ArcadeSystem {
         cartridges.add(cartridge)
     }
 
+    fun getCartridges(): List<GameCartridge> = cartridges.toList()
+
     fun getScoreManager(): ScoreManager = scoreManager
 
     fun getThemeManager(): ThemeManager = themeManager
@@ -398,60 +400,6 @@ class ArcadeSystem {
     /**
      * Cycle through themes demo
      */
-    suspend fun cycleThemesDemo() {
-        val term = initializeTerminal()
-        val themes = themeManager.getAllThemes()
-        themes.forEach { theme ->
-            themeManager.setCurrentTheme(theme)
-
-            term.clearScreen()
-            term.setCursorPosition(0, 0)
-
-            val lanternaColors = theme.toLanternaColors()
-
-            term.setForegroundColor(lanternaColors.primary)
-            term.putString("╔══════════════════════════════════════╗\n")
-            term.putString("║          THEME: ${theme.name.uppercase().padEnd(24)} ║\n")
-            term.putString("╚══════════════════════════════════════╝\n")
-
-            term.setForegroundColor(lanternaColors.secondary)
-            term.putString("Description: ${theme.description}\n\n")
-
-            term.setForegroundColor(lanternaColors.text)
-            term.putString("Color preview:\n")
-
-            term.setForegroundColor(lanternaColors.primary)
-            term.putString("Primary ")
-            term.setForegroundColor(lanternaColors.secondary)
-            term.putString("Secondary ")
-            term.setForegroundColor(lanternaColors.accent)
-            term.putString("Accent ")
-            term.setForegroundColor(lanternaColors.success)
-            term.putString("Success ")
-            term.setForegroundColor(lanternaColors.warning)
-            term.putString("Warning ")
-            term.setForegroundColor(lanternaColors.error)
-            term.putString("Error\n")
-
-            term.putCharacter('\n')
-            term.setForegroundColor(lanternaColors.textDim)
-            term.putString("Press any key for next theme...\n")
-            term.flush()
-
-            // Wait for input or timeout
-            val startTime = System.currentTimeMillis()
-            while (System.currentTimeMillis() - startTime < 3000) {
-                val keyStroke = term.pollInput()
-                if (keyStroke != null) {
-                    break
-                }
-                delay(50)
-            }
-        }
-
-        println("Theme cycling complete!")
-    }
-
     private fun showArcadeLogo(): String =
         """
  /$$      /$$           /$$            /$$$$$$  /$$
