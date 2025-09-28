@@ -22,6 +22,8 @@ class ArcadeSystem {
         cartridges.add(cartridge)
     }
 
+    fun getCartridges(): List<GameCartridge> = cartridges.toList()
+
     fun getScoreManager(): ScoreManager = scoreManager
 
     fun getThemeManager(): ThemeManager = themeManager
