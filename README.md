@@ -4,7 +4,7 @@ A retro-style terminal arcade system with persistent scoreboards, modular game c
 
 ## 🕹️ Features
 
-- **Interactive TUI Interface**: Beautiful ASCII art with vintage styling powered by Kotter
+- **Interactive TUI Interface**: Beautiful ASCII art with vintage styling powered by Lanterna
 - **Full Interactive Navigation**: Menu-driven interface with keyboard navigation and real-time updates
 - **Advanced Theming System**: 5 built-in themes + custom theme support with URL downloading
 - **Interactive Theme Selector**: Live theme switching with instant preview
@@ -104,7 +104,7 @@ gradle run --args="--cycle-themes"
 
 ## 🛠️ Technology Stack
 
-- **Terminal UI**: [Kotter](https://github.com/varabyte/kotter) - Modern Kotlin TUI framework
+- **Terminal UI**: [Lanterna](https://github.com/mabe02/lanterna) - Mature Java terminal GUI library
 - **Theme System**: Custom YAML-based theming with HTTP downloading
 - **Serialization**: Kotlinx Serialization (JSON) + Kaml (YAML)
 - **HTTP Client**: OkHttp for theme downloads
@@ -170,7 +170,7 @@ arcade.addCartridge(MyGameCartridge())
 The system follows a modular, themed architecture:
 
 ### Core Components
-- **ArcadeSystem**: Core system managing terminal I/O, menus, and cartridges (now Kotter-based)
+- **ArcadeSystem**: Core system managing terminal I/O, menus, and cartridges (now Lanterna-based)
 - **ThemeManager**: Handles theme loading, switching, URL downloads, and persistence
 - **GameCartridge**: Interface for all games to implement
 - **ScoreManager**: Handles persistent high score storage
@@ -178,7 +178,7 @@ The system follows a modular, themed architecture:
 ### Theme System Architecture
 - **Theme**: Data class representing a complete theme configuration
 - **ThemeColors**: Color palette for all UI elements
-- **KotterThemeColors**: Kotter-compatible color objects
+- **LanternaThemeColors**: Lanterna-compatible color objects
 - **Default Themes**: 5 built-in themes with different aesthetics
 - **Custom Themes**: User-defined themes loaded from YAML/JSON files
 - **URL Support**: HTTP downloading of themes from remote URLs
@@ -187,7 +187,7 @@ The system follows a modular, themed architecture:
 ### Game Integration
 Individual games can access themed colors through:
 ```kotlin
-val theme = arcade.getThemeManager().currentTheme.toKotterColors()
+val theme = arcade.getThemeManager().currentTheme.toLanternaColors()
 color(theme.player) { /* render player */ }
 color(theme.enemy) { /* render enemies */ }
 ```
@@ -201,7 +201,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### Completed ✅
 - ✅ **Advanced Theming System** with 5 built-in themes
 - ✅ **URL Theme Downloads** with YAML/JSON support  
-- ✅ **Kotter Integration** for modern TUI rendering
+- ✅ **Lanterna Integration** for modern TUI rendering
 - ✅ **Theme Persistence** and management
 - ✅ **Interactive Theme Selection Menu** with live preview
 - ✅ **Interactive Main Menu** with keyboard navigation

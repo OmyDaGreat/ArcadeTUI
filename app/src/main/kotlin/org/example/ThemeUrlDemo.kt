@@ -80,7 +80,7 @@ fun main() {
     println("- Current active theme: ${themeManager.currentTheme.name}")
     println("- URL download capability: ✅ Implemented (OkHttp + YAML parsing)")
     println("- Theme persistence: ✅ JSON storage in arcade-data/themes/")
-    println("- Kotter integration: ✅ Color rendering system")
+    println("- Lanterna integration: ✅ Color rendering system")
 
     println("\n🎯 Theme system ready for production use!")
 
