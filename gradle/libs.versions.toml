@@ -1,5 +1,5 @@
 [versions]
-datetime = "0.7.1-0.6.x-compat"
+datetime = "0.8.0-0.6.x-compat"
 lanterna = "3.1.3"
 serialization = "1.9.0"
 kaml = "0.97.0"
